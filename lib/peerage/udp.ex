@@ -54,7 +54,7 @@ defmodule Peerage.Via.Udp do
 
   @doc "Broadcast our node name via UDP every 3-7 seconds"
   def handle_info(:broadcast, state = %{conn: {addr, port, sock}}) do
-    :ok = :gen_udp.send(sock, addr, port, ["Peer:#{ node() }"])
+    :gen_udp.send(sock, addr, port, ["Peer:#{ node() }"])
     Process.send_after(self(), :broadcast, :rand.uniform(4_000) + 3_000)
     {:noreply, state}
   end
@@ -70,9 +70,8 @@ defmodule Peerage.Via.Udp do
     :inet.setopts(sock, active: 1)             # but don't die.
     {:noreply, state}                          #  ^ TODO configurable.
   end
-  
-  def handle_info({:error, error}, state) do
-    Logger.debug "Error: " <> error
+  def handle_info({:error, :enetunreach}, state) do
+    Logger.debug "Peerage: Network Unreachable"
     {:noreply, state}
   end
 
