@@ -54,7 +54,9 @@ defmodule Peerage.Via.Udp do
 
   @doc "Broadcast our node name via UDP every 3-7 seconds"
   def handle_info(:broadcast, state = %{conn: {addr, port, sock}}) do
-    :gen_udp.send(sock, addr, port, ["Peer:#{ node() }"])
+    {:ok, [{{a, b, c, d}, _, _} | _]} = :inet.getif()
+    us = Enum.join([a, b, c, d], ".")
+    :gen_udp.send(sock, addr, port, ["Peer:" <> us])
     Process.send_after(self(), :broadcast, :rand.uniform(4_000) + 3_000)
     {:noreply, state}
   end
