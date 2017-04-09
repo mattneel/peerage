@@ -70,6 +70,11 @@ defmodule Peerage.Via.Udp do
     :inet.setopts(sock, active: 1)             # but don't die.
     {:noreply, state}                          #  ^ TODO configurable.
   end
+  
+  def handle_info({:error, error}, state) do
+    Logger.debug "Error: " <> error
+    {:noreply, state}
+  end
 
   def terminate(_,_, %{conn: {_,_,sock}}), do: :gen_udp.close(sock)
 
